@@ -22,7 +22,7 @@ const Home = () => {
                         or find balance in life, our AI-powered assistant is here to motivate, guide, and track your progress every
                         step of the way. Join now and start your journey towards a better you today!
                     </p>
-                    <button className="font-medium transition duration-300 ease-in-out bg-green-800 hover:bg-green-600 focus:outline-none text-white w-44 h-10 rounded-sm">
+                    <button className="mt-3 font-medium transition duration-300 ease-in-out bg-green-800 hover:bg-green-600 focus:outline-none text-white w-44 h-10 rounded-sm">
                         Talk to a coach now!
                     </button>
                 </div>
@@ -48,8 +48,6 @@ const Home = () => {
 
             </div>
 
-            {/* Spacer for scroll effect */}
-            <div className="flex-grow h-96"></div> {/* Adjust height for scrolling effect */}
 
             <Footer />
         </>
