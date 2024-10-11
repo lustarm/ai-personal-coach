@@ -10,14 +10,17 @@ import Home from './pages/home.tsx'
 import Login from './pages/login.tsx'
 import NotFound from './pages/notfound.tsx';
 import Register from './pages/register.tsx';
+import Talk from './pages/talk.tsx';
 
 import './index.css'
 
 const router = createBrowserRouter([
+    // Home
     {
         path: "/",
         element: <Home />,
     },
+    // Login + register
     {
         path: "/login",
         element: <Login />,
@@ -25,6 +28,10 @@ const router = createBrowserRouter([
     {
         path: "/register",
         element: <Register />
+    },
+    {
+        path: "/talk",
+        element: <Talk />
     },
     {
         path: "*",

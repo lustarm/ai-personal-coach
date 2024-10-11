@@ -1,41 +1,46 @@
 package users
 
 import (
+	"backend/src/auth"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"backend/src/auth"
 )
 
 // get from DB
 var users []User
 var idCounter int
 
-func ListUsers(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(users)
+// APIResponse struct to represent the response format
+type APIResponse struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
 }
 
+// Updated CreateUser function with detailed error response
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var newUser User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: err.Error()})
 		return
 	}
 
-	if newUser.Username == "" || newUser.Password == "" || newUser.Email == ""{
-        w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid request"})
+	if newUser.Username == "" || newUser.Password == "" || newUser.Email == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Invalid request"})
 		return
 	}
 
-	/* == Check if user is already in DB == */
+	// Check if user is already in DB
 	for _, user := range users {
 		if user.Username == newUser.Username {
-            w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"message": "User already registered"})
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "User already registered"})
 			return
 		}
 	}
@@ -44,35 +49,35 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	newUser.ID = strconv.Itoa(idCounter)
 	users = append(users, newUser)
 
-	// Change to auth token
+	// Generate auth token
 	token, err := auth.CreateToken(newUser.ID, newUser.Username)
 	if err != nil {
-        w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Failed to create authorization token"})
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Failed to create authorization token"})
+		return
 	}
 
 	// Set auth token header
 	w.Header().Set("Authorization", fmt.Sprintf("Bearer %v", token))
 
-	// Return auth token
-	json.NewEncoder(w).Encode(map[string]string{"message": token})
+	// Return success response
+	json.NewEncoder(w).Encode(APIResponse{Error: false, Message: token})
 }
 
-// CheckUserRequest struct to represent the incoming request body
 type CheckUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// CheckUser function to validate the user credentials
+// Updated CheckUser function with detailed error response
 func CheckUser(w http.ResponseWriter, r *http.Request) {
 	var credentials CheckUserRequest
 
 	// Decode the incoming request body into credentials
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
-        w.WriteHeader(http.StatusUnauthorized)
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Invalid request payload"})
 		return
 	}
 
@@ -80,42 +85,43 @@ func CheckUser(w http.ResponseWriter, r *http.Request) {
 	for _, user := range users {
 		if user.Username == credentials.Username && user.Password == credentials.Password {
 
-			// Set auth header token with JWT
+			// Generate auth token
 			token, err := auth.CreateToken(user.Username, user.ID)
 			if err != nil {
-                w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode(map[string]string{"message": "Failed to create authorization token"})
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Failed to create authorization token"})
+				return
 			}
 
+			// Set auth token header
 			w.Header().Set("Authorization", fmt.Sprintf("Bearer %v", token))
 
-			json.NewEncoder(w).Encode(map[string]string{"message": token})
+			// Return success response
+			json.NewEncoder(w).Encode(APIResponse{Error: false, Message: token})
 			return
 		}
 	}
 
-	// If no match is found, return invalid
-	json.NewEncoder(w).Encode(map[string]string{"message": "Invalid username or password"})
+	// No match found, return invalid response
+	w.WriteHeader(http.StatusUnauthorized)
+	json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Invalid username or password"})
+    log.Println("Created user " + credentials.Username + " ")
 }
 
-type VerifyTokenRequest struct {
-	Token string `json:"token"`
-}
-
+// Updated VerifyToken function with detailed error response
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
-	// Get the Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-        w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Authorization header missing"})
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Authorization header missing"})
 		return
 	}
 
 	// Check if the header format is valid and extract the token
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-        w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid Authorization header format"})
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: "Invalid Authorization header format"})
 		return
 	}
 
@@ -124,10 +130,12 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	// Verify the token
 	err := auth.VerifyToken(token)
 	if err != nil {
-        w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(APIResponse{Error: true, Message: err.Error()})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"message": "Verified token"})
+	// Return success response
+	json.NewEncoder(w).Encode(APIResponse{Error: false, Message: "Verified token"})
 }
+
