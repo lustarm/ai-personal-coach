@@ -1,6 +1,25 @@
+import { useState } from "react";
 import Footer from "../components/footer";
 
 const Login = () => {
+    // if errorMsg
+    const [errorMsg, setErrorMsg] = useState('')
+
+
+    const [password, setPassword] = useState('')
+    const [username, setUsername] = useState('')
+
+    const doLogin = () => {
+        fetch("localhost:8000/v1/login", {
+            method: "POST",
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                "username": username,
+                "password": password,
+            })
+        })
+    }
+
     return (
         <>
             <div className="flex flex-col items-center mt-10">
@@ -38,6 +57,7 @@ const Login = () => {
                                 <button
                                     className="bg-green-800 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-sm focus:outline-none focus:shadow-outline"
                                     type="button"
+                                    onClick={doLogin}
                                 >
                                     Login
                                 </button>
