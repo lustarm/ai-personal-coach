@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
 	"log"
 	"net/http"
 
@@ -29,6 +30,8 @@ func main() {
 		AllowCredentials: true,
 	})
 
+    // Clear screen
+    fmt.Print("\033[H\033[2J")
 	// Listen
 	log.Println("Listening on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))

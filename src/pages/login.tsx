@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"
 import Footer from "../components/footer";
 
 const Login = () => {
@@ -7,6 +8,8 @@ const Login = () => {
 
     const [password, setPassword] = useState('')
     const [username, setUsername] = useState('')
+
+    const navigate = useNavigate()
 
     const doLogin = () => {
         fetch("http://localhost:8000/v1/login", {
@@ -23,7 +26,10 @@ const Login = () => {
                     setErrorMsg(data.message)
                     return
                 }
+                setErrorMsg('')
                 console.log(data.message)
+                localStorage.setItem("auth", data.message)
+                navigate("/talk")
             })
             .catch(error => {
                 setErrorMsg('Failed to complete your request at this time please try again')

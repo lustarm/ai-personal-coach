@@ -1,16 +1,9 @@
 import { useNavigate } from "react-router-dom"
 
 const Navbar = () => {
-
     let navigate = useNavigate()
-
-    const clickLogin = () => {
-        navigate("/login")
-    }
-
-    const clickAbout = () => {
-        navigate("about")
-    }
+    const clickLogin = () => navigate("/login")
+    const clickAbout = () => navigate("/about")
 
     return (
         <div className="flex justify-end p-1 mr-3">
