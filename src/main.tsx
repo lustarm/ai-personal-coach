@@ -10,7 +10,7 @@ import Home from './pages/home.tsx'
 import Login from './pages/login.tsx'
 import NotFound from './pages/notfound.tsx';
 import Register from './pages/register.tsx';
-import Talk from './pages/talk.tsx';
+import Dashboard from './pages/dashboard.tsx';
 
 import './index.css'
 
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/talk",
-        element: <Talk />
+        element: <Dashboard />
     },
     {
         path: "*",

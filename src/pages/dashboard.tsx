@@ -10,7 +10,11 @@ const MainContent = ({ activeTab }: { activeTab: string }) => {
                 <div>
                     <h2 className="text-2xl font-semibold">Talk to a Coach</h2>
                     <p>Start your conversation with an AI coach here.</p>
-                    {/* Include your Talk component here */}
+                    {
+                        // How the fuck do I implament ai with react???
+                    }
+
+
                 </div>
             )}
             {activeTab === "Account" && (
@@ -41,8 +45,5 @@ const Dashboard = () => {
     );
 };
 
-const Talk = () => {
-    return (<Dashboard />)
-}
 
-export default Talk
+export default Dashboard
